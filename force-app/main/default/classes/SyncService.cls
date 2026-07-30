@@ -1,15 +1,22 @@
+
 /**
- * Сервис для синхронизации данных между Salesforce и PostgreSQL
- * Поддерживает двустороннюю синхронизацию для Leads, Contacts, Opportunities
+ * Ð¡ÐµÑÐ²Ð¸Ñ Ð´Ð»Ñ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸ Ð´Ð°Ð½Ð½ÑÑ Ð¼ÐµÐ¶Ð´Ñ Salesforce Ð¸ PostgreSQL.
+ * ÐÐ¾Ð´Ð´ÐµÑÐ¶Ð¸Ð²Ð°ÐµÑ Ð´Ð²ÑÑÑÐ¾ÑÐ¾Ð½Ð½ÑÑ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ñ Ð´Ð»Ñ Leads, Contacts, Opportunities.
  */
 public with sharing class SyncService {
     
+    /**
+     * ÐÐµÑÐµÑÐ¸ÑÐ»ÐµÐ½Ð¸Ðµ Ð½Ð°Ð¿ÑÐ°Ð²Ð»ÐµÐ½Ð¸Ð¹ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸.
+     */
     public enum SyncDirection {
-        TO_POSTGRES,    // Из Salesforce в PostgreSQL
-        FROM_POSTGRES,  // Из PostgreSQL в Salesforce
-        BIDIRECTIONAL   // Двусторонняя синхронизация
+        TO_POSTGRES,    // ÐÐ· Salesforce Ð² PostgreSQL
+        FROM_POSTGRES,  // ÐÐ· PostgreSQL Ð² Salesforce
+        BIDIRECTIONAL   // ÐÐ²ÑÑÑÐ¾ÑÐ¾Ð½Ð½ÑÑ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ñ
     }
     
+    /**
+     * ÐÐµÑÐµÑÐ¸ÑÐ»ÐµÐ½Ð¸Ðµ Ð¿Ð¾Ð´Ð´ÐµÑÐ¶Ð¸Ð²Ð°ÐµÐ¼ÑÑ ÑÐ¸Ð¿Ð¾Ð² Ð¾Ð±ÑÐµÐºÑÐ¾Ð².
+     */
     public enum ObjectType {
         LEAD,
         CONTACT,
@@ -17,7 +24,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Синхронизация из Salesforce в PostgreSQL
+     * Ð¡Ð¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ñ Ð¸Ð· Salesforce Ð² PostgreSQL.
      */
     public static SyncResult syncToPostgreSQL(ObjectType objType, List<Id> recordIds) {
         SyncResult result = new SyncResult();
@@ -25,14 +32,14 @@ public with sharing class SyncService {
         result.direction = 'TO_POSTGRES';
         Datetime startTime = Datetime.now();
         
-        addLog(result, 'INFO', 'Начало синхронизации в PostgreSQL');
+        addLog(result, 'INFO', 'ÐÐ°ÑÐ°Ð»Ð¾ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸ Ð² PostgreSQL');
         
         try {
             List<SObject> records = queryRecords(objType, recordIds);
             
             if (records.isEmpty()) {
                 result.success = true;
-                result.message = 'Нет записей для синхронизации';
+                result.message = 'ÐÐµÑ Ð·Ð°Ð¿Ð¸ÑÐµÐ¹ Ð´Ð»Ñ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸';
                 addLog(result, 'INFO', result.message);
                 return finalize(result, startTime);
             }
@@ -57,8 +64,8 @@ public with sharing class SyncService {
                 }
                 
                 result.message = result.success 
-                    ? 'Успешно обработано: ' + result.recordsProcessed + ' записей'
-                    : 'Ошибка: ' + String.join(result.errors, '; ');
+                    ? 'Ð£ÑÐ¿ÐµÑÐ½Ð¾ Ð¾Ð±ÑÐ°Ð±Ð¾ÑÐ°Ð½Ð¾: ' + result.recordsProcessed + ' Ð·Ð°Ð¿Ð¸ÑÐµÐ¹'
+                    : 'ÐÑÐ¸Ð±ÐºÐ°: ' + String.join(result.errors, '; ');
                     
                 addLog(result, result.success ? 'SUCCESS' : 'ERROR', result.message);
             } else {
@@ -68,7 +75,7 @@ public with sharing class SyncService {
             }
         } catch (Exception e) {
             result.success = false;
-            result.message = 'Ошибка: ' + e.getMessage();
+            result.message = 'ÐÑÐ¸Ð±ÐºÐ°: ' + e.getMessage();
             result.errors.add(e.getTypeName() + ': ' + e.getMessage());
             addLog(result, 'ERROR', result.message);
         }
@@ -77,7 +84,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Завершение синхронизации - расчет длительности
+     * ÐÐ°Ð²ÐµÑÑÐµÐ½Ð¸Ðµ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸ - ÑÐ°ÑÑÐµÑ Ð´Ð»Ð¸ÑÐµÐ»ÑÐ½Ð¾ÑÑÐ¸.
      */
     private static SyncResult finalize(SyncResult result, Datetime startTime) {
         result.duration = (Datetime.now().getTime() - startTime.getTime()) / 1000.0;
@@ -85,7 +92,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Синхронизация из PostgreSQL в Salesforce
+     * Ð¡Ð¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ñ Ð¸Ð· PostgreSQL Ð² Salesforce.
      */
     public static SyncResult syncFromPostgreSQL(ObjectType objType, Map<String, Object> filters) {
         SyncResult result = new SyncResult();
@@ -93,7 +100,7 @@ public with sharing class SyncService {
         result.direction = 'FROM_POSTGRES';
         Datetime startTime = Datetime.now();
         
-        addLog(result, 'INFO', 'Начало синхронизации из PostgreSQL');
+        addLog(result, 'INFO', 'ÐÐ°ÑÐ°Ð»Ð¾ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸ Ð¸Ð· PostgreSQL');
         
         try {
             HttpResponse response = callPostgreSQLAPI('fetch', new Map<String, Object>{
@@ -107,7 +114,7 @@ public with sharing class SyncService {
                 
                 if (records == null || records.isEmpty()) {
                     result.success = true;
-                    result.message = 'Нет записей для синхронизации';
+                    result.message = 'ÐÐµÑ Ð·Ð°Ð¿Ð¸ÑÐµÐ¹ Ð´Ð»Ñ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸';
                     addLog(result, 'INFO', result.message);
                     return finalize(result, startTime);
                 }
@@ -127,8 +134,8 @@ public with sharing class SyncService {
                 
                 result.success = result.recordsFailed == 0;
                 result.recordsProcessed = successCount;
-                result.message = 'Обработано: ' + successCount + 
-                    (result.recordsFailed > 0 ? ', ошибок: ' + result.recordsFailed : '');
+                result.message = 'ÐÐ±ÑÐ°Ð±Ð¾ÑÐ°Ð½Ð¾: ' + successCount + 
+                    (result.recordsFailed > 0 ? ', Ð¾ÑÐ¸Ð±Ð¾Ðº: ' + result.recordsFailed : '');
                 addLog(result, result.success ? 'SUCCESS' : 'ERROR', result.message);
             } else {
                 result.success = false;
@@ -137,7 +144,7 @@ public with sharing class SyncService {
             }
         } catch (Exception e) {
             result.success = false;
-            result.message = 'Ошибка: ' + e.getMessage();
+            result.message = 'ÐÑÐ¸Ð±ÐºÐ°: ' + e.getMessage();
             result.errors.add(e.getTypeName() + ': ' + e.getMessage());
             addLog(result, 'ERROR', result.message);
         }
@@ -146,7 +153,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Двусторонняя синхронизация
+     * ÐÐ²ÑÑÑÐ¾ÑÐ¾Ð½Ð½ÑÑ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ñ.
      */
     public static SyncResult syncBidirectional(ObjectType objType, List<Id> recordIds, Map<String, Object> filters) {
         SyncResult result = new SyncResult();
@@ -154,12 +161,12 @@ public with sharing class SyncService {
         result.direction = 'BIDIRECTIONAL';
         Datetime startTime = Datetime.now();
         
-        addLog(result, 'INFO', 'Начало двусторонней синхронизации');
+        addLog(result, 'INFO', 'ÐÐ°ÑÐ°Ð»Ð¾ Ð´Ð²ÑÑÑÐ¾ÑÐ¾Ð½Ð½ÐµÐ¹ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸');
         
         SyncResult toPostgres = syncToPostgreSQL(objType, recordIds);
         SyncResult fromPostgres = syncFromPostgreSQL(objType, filters);
         
-        // Объединяем результаты
+        // ÐÐ±ÑÐµÐ´Ð¸Ð½ÑÐµÐ¼ ÑÐµÐ·ÑÐ»ÑÑÐ°ÑÑ
         result.success = toPostgres.success && fromPostgres.success;
         result.recordsProcessed = toPostgres.recordsProcessed + fromPostgres.recordsProcessed;
         result.recordsFailed = toPostgres.recordsFailed + fromPostgres.recordsFailed;
@@ -170,8 +177,8 @@ public with sharing class SyncService {
         result.errors.addAll(fromPostgres.errors);
         
         result.message = result.success 
-            ? 'Успешно. В PG: ' + toPostgres.recordsProcessed + ', из PG: ' + fromPostgres.recordsProcessed
-            : 'Ошибка. ' + String.join(result.errors, '; ');
+            ? 'Ð£ÑÐ¿ÐµÑÐ½Ð¾. Ð PG: ' + toPostgres.recordsProcessed + ', Ð¸Ð· PG: ' + fromPostgres.recordsProcessed
+            : 'ÐÑÐ¸Ð±ÐºÐ°. ' + String.join(result.errors, '; ');
             
         addLog(result, result.success ? 'SUCCESS' : 'ERROR', result.message);
         
@@ -179,7 +186,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Запрос записей из Salesforce
+     * ÐÐ°Ð¿ÑÐ¾Ñ Ð·Ð°Ð¿Ð¸ÑÐµÐ¹ Ð¸Ð· Salesforce.
      */
     private static List<SObject> queryRecords(ObjectType objType, List<Id> recordIds) {
         String soql = buildSOQL(objType, recordIds);
@@ -187,7 +194,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Построение SOQL запроса
+     * ÐÐ¾ÑÑÑÐ¾ÐµÐ½Ð¸Ðµ SOQL Ð·Ð°Ð¿ÑÐ¾ÑÐ°.
      */
     private static String buildSOQL(ObjectType objType, List<Id> recordIds) {
         Map<ObjectType, String> fieldMappings = new Map<ObjectType, String>{
@@ -206,7 +213,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Подготовка данных для отправки в PostgreSQL
+     * ÐÐ¾Ð´Ð³Ð¾ÑÐ¾Ð²ÐºÐ° Ð´Ð°Ð½Ð½ÑÑ Ð´Ð»Ñ Ð¾ÑÐ¿ÑÐ°Ð²ÐºÐ¸ Ð² PostgreSQL.
      */
     private static List<Map<String, Object>> preparePayload(List<SObject> records, ObjectType objType) {
         List<Map<String, Object>> payload = new List<Map<String, Object>>();
@@ -217,7 +224,7 @@ public with sharing class SyncService {
             recordMap.put('objectType', objType.name());
             recordMap.put('lastModified', record.get('LastModifiedDate'));
             
-            // Маппинг полей в зависимости от типа объекта
+            // ÐÐ°Ð¿Ð¿Ð¸Ð½Ð³ Ð¿Ð¾Ð»ÐµÐ¹ Ð² Ð·Ð°Ð²Ð¸ÑÐ¸Ð¼Ð¾ÑÑÐ¸ Ð¾Ñ ÑÐ¸Ð¿Ð° Ð¾Ð±ÑÐµÐºÑÐ°
             if (objType == ObjectType.LEAD) {
                 Lead lead = (Lead) record;
                 recordMap.put('firstName', lead.FirstName);
@@ -253,7 +260,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Конвертация данных из PostgreSQL в объекты Salesforce
+     * ÐÐ¾Ð½Ð²ÐµÑÑÐ°ÑÐ¸Ñ Ð´Ð°Ð½Ð½ÑÑ Ð¸Ð· PostgreSQL Ð² Ð¾Ð±ÑÐµÐºÑÑ Salesforce.
      */
     private static List<SObject> convertToSalesforceRecords(List<Object> records, ObjectType objType) {
         List<SObject> salesforceRecords = new List<SObject>();
@@ -315,7 +322,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Upsert записей в Salesforce
+     * Upsert Ð·Ð°Ð¿Ð¸ÑÐµÐ¹ Ð² Salesforce.
      */
     private static Database.UpsertResult[] upsertRecords(List<SObject> records, ObjectType objType) {
         Schema.SObjectField externalIdField;
@@ -332,22 +339,22 @@ public with sharing class SyncService {
     }
     
     /**
-     * Вызов API PostgreSQL
+     * ÐÑÐ·Ð¾Ð² API PostgreSQL.
      */
     private static HttpResponse callPostgreSQLAPI(String action, Object payload) {
         HttpRequest req = new HttpRequest();
         
-        // Прямой URL для ngrok
+        // ÐÑÑÐ¼Ð¾Ð¹ URL Ð´Ð»Ñ ngrok
         String baseUrl = 'https://hadley-chronogrammatical-rememberingly.ngrok-free.dev';
         String endpoint = baseUrl + '/' + action;
         req.setEndpoint(endpoint);
         req.setMethod('POST');
         req.setHeader('Content-Type', 'application/json');
         
-        // Добавляем заголовки для ngrok
+        // ÐÐ¾Ð±Ð°Ð²Ð»ÑÐµÐ¼ Ð·Ð°Ð³Ð¾Ð»Ð¾Ð²ÐºÐ¸ Ð´Ð»Ñ ngrok
         req.setHeader('ngrok-skip-browser-warning', 'true');
         
-        // Сериализуем payload
+        // Ð¡ÐµÑÐ¸Ð°Ð»Ð¸Ð·ÑÐµÐ¼ payload
         String body = JSON.serialize(payload);
         req.setBody(body);
         req.setTimeout(120000);
@@ -359,7 +366,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Класс результата синхронизации
+     * ÐÐ»Ð°ÑÑ ÑÐµÐ·ÑÐ»ÑÑÐ°ÑÐ° ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸.
      */
     public class SyncResult {
         @AuraEnabled public String objectType;
@@ -372,6 +379,9 @@ public with sharing class SyncService {
         @AuraEnabled public List<SyncLogEntry> logEntries;
         @AuraEnabled public Decimal duration;
         
+        /**
+         * ÐÐ¾Ð½ÑÑÑÑÐºÑÐ¾Ñ Ð´Ð»Ñ Ð¸Ð½Ð¸ÑÐ¸Ð°Ð»Ð¸Ð·Ð°ÑÐ¸Ð¸ SyncResult.
+         */
         public SyncResult() {
             this.errors = new List<String>();
             this.logEntries = new List<SyncLogEntry>();
@@ -382,13 +392,16 @@ public with sharing class SyncService {
     }
     
     /**
-     * Класс записи лога
+     * ÐÐ»Ð°ÑÑ Ð·Ð°Ð¿Ð¸ÑÐ¸ Ð»Ð¾Ð³Ð°.
      */
     public class SyncLogEntry {
         @AuraEnabled public String timestamp;
         @AuraEnabled public String level;
         @AuraEnabled public String message;
         
+        /**
+         * ÐÐ¾Ð½ÑÑÑÑÐºÑÐ¾Ñ Ð´Ð»Ñ Ð¸Ð½Ð¸ÑÐ¸Ð°Ð»Ð¸Ð·Ð°ÑÐ¸Ð¸ SyncLogEntry.
+         */
         public SyncLogEntry(String level, String message) {
             this.timestamp = Datetime.now().format('yyyy-MM-dd HH:mm:ss');
             this.level = level;
@@ -397,7 +410,7 @@ public with sharing class SyncService {
     }
     
     /**
-     * Добавление записи в лог
+     * ÐÐ¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ðµ Ð·Ð°Ð¿Ð¸ÑÐ¸ Ð² Ð»Ð¾Ð³.
      */
     private static void addLog(SyncResult result, String level, String message) {
         result.logEntries.add(new SyncLogEntry(level, message));
