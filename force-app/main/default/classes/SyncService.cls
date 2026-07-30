@@ -3,7 +3,7 @@
  * Ð¡ÐµÑÐ²Ð¸Ñ Ð´Ð»Ñ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸ Ð´Ð°Ð½Ð½ÑÑ Ð¼ÐµÐ¶Ð´Ñ Salesforce Ð¸ PostgreSQL.
  * ÐÐ¾Ð´Ð´ÐµÑÐ¶Ð¸Ð²Ð°ÐµÑ Ð´Ð²ÑÑÑÐ¾ÑÐ¾Ð½Ð½ÑÑ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ñ Ð´Ð»Ñ Leads, Contacts, Opportunities.
  */
-public with sharing class SyncService {
+public with sharing class SyncService { //from cli
     
     /**
      * ÐÐµÑÐµÑÐ¸ÑÐ»ÐµÐ½Ð¸Ðµ Ð½Ð°Ð¿ÑÐ°Ð²Ð»ÐµÐ½Ð¸Ð¹ ÑÐ¸Ð½ÑÑÐ¾Ð½Ð¸Ð·Ð°ÑÐ¸Ð¸.
