@@ -4,7 +4,7 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>console:history</componentName>
+                <componentName>console:historyss</componentName>
                 <identifier>console_history</identifier>
             </componentInstance>
         </itemInstances>
