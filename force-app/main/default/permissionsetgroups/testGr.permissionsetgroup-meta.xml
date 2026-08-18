@@ -10,5 +10,5 @@
     <permissionSets>force__GenieMarketingDataAwareSpecialist</permissionSets>
     <permissionSets>force__GenieMarketingManager</permissionSets>
     <permissionSets>force__GenieMarketingSpecialist</permissionSets>
-    <status>UpdatedFromGithub</status>
+    <status>Updated</status>
 </PermissionSetGroup>
