@@ -1,3 +1,3 @@
 public class testClass {
-        // comment from branch egor form git
+        // comment from branch egor form git222
 }
